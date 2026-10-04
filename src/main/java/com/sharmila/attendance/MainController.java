@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Optional;
 
 public class MainController {
+    private static final int WEEK_COUNT = 8;
+    private static final int PERIODS_PER_WEEK = 4;
+
     @FXML private ListView<Course> courseList;
     @FXML private Label courseTitle;
     @FXML private Label teacherLabel;
@@ -266,13 +269,13 @@ public class MainController {
         if (sessionDatePicker.getValue() == null) return;
         LocalDate start = DateUtil.mondayOf(sessionDatePicker.getValue());
 
-        for (int week = 0; week < 8; week++) {
+        for (int week = 0; week < WEEK_COUNT; week++) {
             LocalDate weekStart = start.plusDays(week * 7L);
             TableColumn<Student, String> weekColumn = new TableColumn<>("W" + (week + 1));
-            weekColumn.setPrefWidth(4 * 62);
-            weekColumn.setMinWidth(4 * 54);
+            weekColumn.setPrefWidth(PERIODS_PER_WEEK * 62);
+            weekColumn.setMinWidth(PERIODS_PER_WEEK * 54);
 
-            for (int period = 1; period <= 4; period++) {
+            for (int period = 1; period <= PERIODS_PER_WEEK; period++) {
                 final LocalDate cellDate = weekStart;
                 final int cellPeriod = period;
                 final Course cellCourse = course;
@@ -332,7 +335,7 @@ public class MainController {
             return;
         }
         LocalDate start = DateUtil.mondayOf(sessionDatePicker.getValue());
-        LocalDate end = start.plusDays(55);
+        LocalDate end = start.plusWeeks(WEEK_COUNT).minusDays(1);
         statusCache.clear();
         statusCache.putAll(attendanceDAO.loadStatuses(course.getId(), start, end));
         attendanceTable.refresh();
