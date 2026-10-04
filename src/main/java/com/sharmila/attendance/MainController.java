@@ -20,7 +20,6 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.stage.Window;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,11 +48,9 @@ public class MainController {
     private final ObservableList<Course> courses = FXCollections.observableArrayList();
     private final ObservableList<Student> students = FXCollections.observableArrayList();
     private final Map<String, String> statusCache = new HashMap<>();
-    private final DateTimeFormatter headerFormatter = DateTimeFormatter.ofPattern("dd MMM");
-
     @FXML
     private void initialize() {
-        periodChoice.setItems(FXCollections.observableArrayList(1, 2, 3));
+        periodChoice.setItems(FXCollections.observableArrayList(1, 2, 3, 4));
         periodChoice.setValue(1);
         sessionDatePicker.setValue(LocalDate.now());
 
@@ -186,7 +183,7 @@ public class MainController {
         Integer period = periodChoice.getValue();
         if (course == null || date == null || period == null) return;
         Window window = courseList.getScene().getWindow();
-        attendanceController.markAllPresent(window, students, course.getId(), date, period);
+        attendanceController.markAllPresent(window, students, course.getId(), DateUtil.mondayOf(date), period);
         loadAttendanceGrid();
         setStatus("Attendance updated.");
     }
@@ -269,19 +266,25 @@ public class MainController {
         if (sessionDatePicker.getValue() == null) return;
         LocalDate start = DateUtil.mondayOf(sessionDatePicker.getValue());
 
-        for (int week = 0; week < 4; week++) {
-            for (int period = 1; period <= 3; period++) {
-                final LocalDate cellDate = start.plusDays(week * 7L);
+        for (int week = 0; week < 8; week++) {
+            LocalDate weekStart = start.plusDays(week * 7L);
+            TableColumn<Student, String> weekColumn = new TableColumn<>("W" + (week + 1));
+            weekColumn.setPrefWidth(4 * 62);
+            weekColumn.setMinWidth(4 * 54);
+
+            for (int period = 1; period <= 4; period++) {
+                final LocalDate cellDate = weekStart;
                 final int cellPeriod = period;
                 final Course cellCourse = course;
-                String title = "W" + (week + 1) + " P" + period + "\n" + headerFormatter.format(cellDate);
-                TableColumn<Student, String> column = new TableColumn<>(title);
-                column.setPrefWidth(82);
-                column.setMinWidth(82);
-                column.setCellValueFactory(data -> new ReadOnlyStringWrapper(""));
-                column.setCellFactory(tc -> createAttendanceCell(cellDate, cellPeriod, cellCourse));
-                attendanceTable.getColumns().add(column);
+                TableColumn<Student, String> periodColumn = new TableColumn<>("P" + period);
+                periodColumn.setPrefWidth(62);
+                periodColumn.setMinWidth(54);
+                periodColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(""));
+                periodColumn.setCellFactory(tc -> createAttendanceCell(cellDate, cellPeriod, cellCourse));
+                weekColumn.getColumns().add(periodColumn);
             }
+
+            attendanceTable.getColumns().add(weekColumn);
         }
     }
 
@@ -329,7 +332,7 @@ public class MainController {
             return;
         }
         LocalDate start = DateUtil.mondayOf(sessionDatePicker.getValue());
-        LocalDate end = start.plusDays(27);
+        LocalDate end = start.plusDays(55);
         statusCache.clear();
         statusCache.putAll(attendanceDAO.loadStatuses(course.getId(), start, end));
         attendanceTable.refresh();

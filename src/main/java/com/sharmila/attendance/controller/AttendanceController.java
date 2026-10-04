@@ -23,14 +23,15 @@ public class AttendanceController {
         return next;
     }
 
-    public void markAllPresent(Window owner, List<Student> students, int courseId, LocalDate date, int period) {
+    public void markAllPresent(Window owner, List<Student> students, int courseId, LocalDate weekStart, int period) {
         Alert confirm = new Alert(
                 Alert.AlertType.CONFIRMATION,
-                "Mark all " + students.size() + " students as Present for " + date + ", Period " + period + "?",
+                "Mark all " + students.size() + " students as Present for period " + period
+                        + " in the week starting " + weekStart + "?",
                 ButtonType.CANCEL,
                 ButtonType.OK
         );
-        confirm.setTitle("Mark All Present");
+        confirm.setTitle("Mark Period Present");
         confirm.setHeaderText("Confirm attendance");
         confirm.initOwner(owner);
 
@@ -39,7 +40,7 @@ public class AttendanceController {
         }
 
         for (Student student : students) {
-            dao.setStatus(student.getId(), courseId, date, period, "PRESENT");
+            dao.setStatus(student.getId(), courseId, weekStart, period, "PRESENT");
         }
     }
 

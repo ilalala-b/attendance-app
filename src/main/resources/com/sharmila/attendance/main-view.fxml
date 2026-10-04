@@ -11,9 +11,10 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="root" stylesheets="@/css/style.css" xmlns="http://javafx.com/javafx/27" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sharmila.attendance.MainController">
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sharmila.attendance.MainController">
     <left>
         <VBox fx:id="sidebar" prefWidth="240" spacing="12" styleClass="sidebar">
             <padding>
@@ -50,12 +51,12 @@
                 <Label text="Session date:" styleClass="toolbar-label" />
                 <DatePicker fx:id="sessionDatePicker" />
                 <Label text="Period:" styleClass="toolbar-label" />
-                <ChoiceBox fx:id="periodChoice" prefWidth="90" />
+                <ChoiceBox fx:id="periodChoice" prefWidth="80" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button text="Mark All Present" onAction="#markAllPresent" styleClass="primary-button" />
+                <Button text="Mark Period Present" onAction="#markAllPresent" styleClass="primary-button" />
             </HBox>
 
-            <Label text="Attendance overview — 4 weeks × 3 periods. Click a cell to cycle Present / Absent / Clear." styleClass="hint-label" />
+            <Label text="Attendance overview — 8 weeks × 4 periods. Click a cell to cycle Present / Absent / Clear." styleClass="hint-label" />
 
             <TableView fx:id="attendanceTable" VBox.vgrow="ALWAYS" styleClass="attendance-table" />
 
