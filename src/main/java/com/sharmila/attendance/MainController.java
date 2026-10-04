@@ -271,13 +271,15 @@ public class MainController {
 
         for (int week = 0; week < 4; week++) {
             for (int period = 1; period <= 3; period++) {
-                LocalDate date = start.plusDays(week * 7L);
-                String title = "W" + (week + 1) + " P" + period + "\n" + headerFormatter.format(date);
+                final LocalDate cellDate = start.plusDays(week * 7L);
+                final int cellPeriod = period;
+                final Course cellCourse = course;
+                String title = "W" + (week + 1) + " P" + period + "\n" + headerFormatter.format(cellDate);
                 TableColumn<Student, String> column = new TableColumn<>(title);
                 column.setPrefWidth(82);
                 column.setMinWidth(82);
                 column.setCellValueFactory(data -> new ReadOnlyStringWrapper(""));
-                column.setCellFactory(tc -> createAttendanceCell(date, period, course));
+                column.setCellFactory(tc -> createAttendanceCell(cellDate, cellPeriod, cellCourse));
                 attendanceTable.getColumns().add(column);
             }
         }

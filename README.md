@@ -39,3 +39,9 @@ attendance.db
 ```
 
 Then run the project again. The sample classes and students will be recreated.
+
+
+
+
+git config --global user.name "ilalala-b-60"
+git config --global user.email "sharmi601011@gmail.com"
