@@ -1,0 +1,183 @@
+.root {
+    -fx-font-family: "Segoe UI", "Arial";
+    -fx-background-color: #f5f7fb;
+}
+
+.sidebar {
+    -fx-background-color: #13233b;
+}
+
+.brand-title {
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.sidebar-title {
+    -fx-text-fill: #b9c6d8;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.course-list {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: #13233b;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+}
+
+.course-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e8eef6;
+    -fx-padding: 11px 10px;
+    -fx-font-size: 13px;
+    -fx-background-radius: 7px;
+}
+
+.course-list .list-cell:hover {
+    -fx-background-color: #1d3557;
+}
+
+.course-list .list-cell:selected {
+    -fx-background-color: #2d6cdf;
+    -fx-text-fill: white;
+}
+
+.content-area {
+    -fx-background-color: #f5f7fb;
+}
+
+.course-title {
+    -fx-text-fill: #172033;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.teacher-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+}
+
+.toolbar-card {
+    -fx-background-color: white;
+    -fx-padding: 11px;
+    -fx-background-radius: 10px;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10px;
+}
+
+.toolbar-label {
+    -fx-text-fill: #374151;
+    -fx-font-weight: bold;
+}
+
+.hint-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+}
+
+.status-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+}
+
+.primary-button {
+    -fx-background-color: #2d6cdf;
+    -fx-text-fill: white;
+    -fx-background-radius: 7px;
+    -fx-padding: 8px 13px;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1f58bf;
+}
+
+.secondary-button {
+    -fx-background-color: #e8eef8;
+    -fx-text-fill: #1f3b67;
+    -fx-background-radius: 7px;
+    -fx-padding: 8px 13px;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #d9e4f4;
+}
+
+.danger-outline-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #ef4444;
+    -fx-text-fill: #dc2626;
+    -fx-border-radius: 7px;
+    -fx-background-radius: 7px;
+    -fx-padding: 7px 12px;
+    -fx-cursor: hand;
+}
+
+.danger-outline-button:hover {
+    -fx-background-color: #fff1f2;
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
+
+.attendance-table {
+    -fx-background-color: white;
+    -fx-border-color: #dbe3ee;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.attendance-table .column-header-background {
+    -fx-background-color: #edf2f8;
+}
+
+.attendance-table .column-header,
+.attendance-table .filler {
+    -fx-background-color: #edf2f8;
+    -fx-border-color: #dbe3ee;
+}
+
+.attendance-table .column-header .label {
+    -fx-text-fill: #334155;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.attendance-table .table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #edf2f7 transparent;
+}
+
+.attendance-table .table-row-cell:selected {
+    -fx-background-color: #eef5ff;
+}
+
+.attendance-button {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.attendance-button.present {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+    -fx-border-color: #86efac;
+}
+
+.attendance-button.absent {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #b91c1c;
+    -fx-border-color: #fca5a5;
+}
+
+.attendance-button.empty {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #64748b;
+    -fx-border-color: #cbd5e1;
+}

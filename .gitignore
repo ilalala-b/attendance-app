@@ -1,0 +1,6 @@
+target/
+attendance.db
+.idea/
+*.iml
+.DS_Store
+.vscode/*.log
