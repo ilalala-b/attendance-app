@@ -7,6 +7,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -48,11 +49,18 @@
             <Separator />
 
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="toolbar-card">
-                <Label text="Session date:" styleClass="toolbar-label" />
-                <DatePicker fx:id="sessionDatePicker" />
+                <Label text="Week 1 Start:" styleClass="toolbar-label" />
+                <DatePicker fx:id="weekStartDatePicker" prefWidth="130" />
+
+                <Label text="Total Weeks:" styleClass="toolbar-label" />
+                <Spinner fx:id="weekCountSpinner" prefWidth="80" editable="true" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Label text="Mark Present:" styleClass="toolbar-label" />
+                <ChoiceBox fx:id="weekChoice" prefWidth="80" />
                 <Label text="Period:" styleClass="toolbar-label" />
                 <ChoiceBox fx:id="periodChoice" prefWidth="80" />
-                <Region HBox.hgrow="ALWAYS" />
                 <Button text="Mark Period Present" onAction="#markAllPresent" styleClass="primary-button" />
             </HBox>
 

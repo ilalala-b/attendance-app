@@ -8,38 +8,38 @@ import com.sharmila.attendance.dao.CourseDAO;
 import com.sharmila.attendance.dao.StudentDAO;
 import com.sharmila.attendance.model.Course;
 import com.sharmila.attendance.model.Student;
-import com.sharmila.attendance.util.AttendanceCalculator;
+import com.sharmila.attendance.ui.AttendanceGridBuilder;
 import com.sharmila.attendance.util.DateUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Region;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.stage.Window;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class MainController {
-    private static final int WEEK_COUNT = 8;
-    private static final int PERIODS_PER_WEEK = 4;
 
+    // --- UI COMPONENTS ---
     @FXML private ListView<Course> courseList;
     @FXML private Label courseTitle;
     @FXML private Label teacherLabel;
     @FXML private Label statusLabel;
-    @FXML private DatePicker sessionDatePicker;
+
     @FXML private ChoiceBox<Integer> periodChoice;
     @FXML private TableView<Student> attendanceTable;
     @FXML private Button editCourseButton;
     @FXML private Button deleteCourseButton;
     @FXML private Button editStudentButton;
     @FXML private Button deleteStudentButton;
+
+    // --- NEW UI COMPONENTS FOR DYNAMIC WEEKS ---
+    @FXML private DatePicker weekStartDatePicker;
+    @FXML private Spinner<Integer> weekCountSpinner;
+    @FXML private ChoiceBox<Integer> weekChoice;
 
     private final CourseDAO courseDAO = new CourseDAO();
     private final StudentDAO studentDAO = new StudentDAO();
@@ -51,21 +51,34 @@ public class MainController {
     private final ObservableList<Course> courses = FXCollections.observableArrayList();
     private final ObservableList<Student> students = FXCollections.observableArrayList();
     private final Map<String, String> statusCache = new HashMap<>();
+
     @FXML
     private void initialize() {
         periodChoice.setItems(FXCollections.observableArrayList(1, 2, 3, 4));
         periodChoice.setValue(1);
-        sessionDatePicker.setValue(LocalDate.now());
 
-        courses.setAll(courseDAO.findAll());
-        courseList.setItems(courses);
-        courseList.getSelectionModel().selectedItemProperty().addListener((obs, oldCourse, newCourse) -> onCourseSelected(newCourse));
-        sessionDatePicker.valueProperty().addListener((obs, oldDate, newDate) -> {
-            if (newDate != null) {
+        // --- Setup dynamic weeks ---
+        weekStartDatePicker.setValue(DateUtil.mondayOf(LocalDate.now()));
+        weekCountSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 52, 8));
+        updateWeekChoices(8);
+
+        weekCountSpinner.valueProperty().addListener((obs, oldVal, newVal) -> {
+            updateWeekChoices(newVal);
+            rebuildAttendanceColumns();
+            loadAttendanceGrid();
+        });
+
+        weekStartDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
                 rebuildAttendanceColumns();
                 loadAttendanceGrid();
             }
         });
+        // ------------------------------------
+
+        courses.setAll(courseDAO.findAll());
+        courseList.setItems(courses);
+        courseList.getSelectionModel().selectedItemProperty().addListener((obs, oldCourse, newCourse) -> onCourseSelected(newCourse));
 
         if (!courses.isEmpty()) {
             courseList.getSelectionModel().selectFirst();
@@ -73,6 +86,15 @@ public class MainController {
             onCourseSelected(null);
         }
         setStatus("Ready. Click an attendance cell to cycle: blank → Present → Absent → blank.");
+    }
+
+    private void updateWeekChoices(int maxWeeks) {
+        ObservableList<Integer> weeks = FXCollections.observableArrayList();
+        for (int i = 1; i <= maxWeeks; i++) {
+            weeks.add(i);
+        }
+        weekChoice.setItems(weeks);
+        weekChoice.setValue(1);
     }
 
     @FXML
@@ -182,13 +204,18 @@ public class MainController {
     @FXML
     private void markAllPresent() {
         Course course = selectedCourse();
-        LocalDate date = sessionDatePicker.getValue();
+        LocalDate startDate = weekStartDatePicker.getValue();
+        Integer week = weekChoice.getValue();
         Integer period = periodChoice.getValue();
-        if (course == null || date == null || period == null) return;
+
+        if (course == null || startDate == null || week == null || period == null) return;
         Window window = courseList.getScene().getWindow();
-        attendanceController.markAllPresent(window, students, course.getId(), DateUtil.mondayOf(date), period);
+
+        LocalDate targetDate = startDate.plusWeeks(week - 1);
+
+        attendanceController.markAllPresent(window, students, course.getId(), targetDate, period);
         loadAttendanceGrid();
-        setStatus("Attendance updated.");
+        setStatus("Attendance marked for Week " + week + ", Period " + period + ".");
     }
 
     @FXML
@@ -247,95 +274,35 @@ public class MainController {
 
     private void rebuildAttendanceColumns() {
         Course course = selectedCourse();
-        attendanceTable.getColumns().clear();
+        LocalDate weekStart = weekStartDatePicker.getValue();
+        int weeks = weekCountSpinner.getValue();
 
-        TableColumn<Student, String> idColumn = new TableColumn<>("Student ID");
-        idColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getStudentId()));
-        idColumn.setPrefWidth(120);
-
-        TableColumn<Student, String> nameColumn = new TableColumn<>("Student Name");
-        nameColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().getStudentName()));
-        nameColumn.setPrefWidth(190);
-
-        TableColumn<Student, String> percentageColumn = new TableColumn<>("Attendance %");
-        percentageColumn.setCellValueFactory(data -> {
-            double percentage = course == null ? 0 : attendanceDAO.calculatePercentage(data.getValue().getId(), course.getId());
-            return new ReadOnlyStringWrapper(AttendanceCalculator.formatPercentage(percentage));
-        });
-        percentageColumn.setPrefWidth(100);
-
-        attendanceTable.getColumns().addAll(idColumn, nameColumn, percentageColumn);
-
-        if (sessionDatePicker.getValue() == null) return;
-        LocalDate start = DateUtil.mondayOf(sessionDatePicker.getValue());
-
-        for (int week = 0; week < WEEK_COUNT; week++) {
-            LocalDate weekStart = start.plusDays(week * 7L);
-            TableColumn<Student, String> weekColumn = new TableColumn<>("W" + (week + 1));
-            weekColumn.setPrefWidth(PERIODS_PER_WEEK * 62);
-            weekColumn.setMinWidth(PERIODS_PER_WEEK * 54);
-
-            for (int period = 1; period <= PERIODS_PER_WEEK; period++) {
-                final LocalDate cellDate = weekStart;
-                final int cellPeriod = period;
-                final Course cellCourse = course;
-                TableColumn<Student, String> periodColumn = new TableColumn<>("P" + period);
-                periodColumn.setPrefWidth(62);
-                periodColumn.setMinWidth(54);
-                periodColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(""));
-                periodColumn.setCellFactory(tc -> createAttendanceCell(cellDate, cellPeriod, cellCourse));
-                weekColumn.getColumns().add(periodColumn);
-            }
-
-            attendanceTable.getColumns().add(weekColumn);
-        }
-    }
-
-    private TableCell<Student, String> createAttendanceCell(LocalDate date, int period, Course course) {
-        return new TableCell<>() {
-            private final Button button = new Button();
-
-            {
-                button.getStyleClass().add("attendance-button");
-                button.setMaxWidth(Double.MAX_VALUE);
-                button.setPrefHeight(30);
-                button.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                    Student student = getTableView().getItems().get(getIndex());
-                    if (course == null || student == null) return;
+        new AttendanceGridBuilder(
+                attendanceTable,
+                course,
+                weekStart,
+                weeks,
+                statusCache,
+                student -> course == null ? 0 : attendanceDAO.calculatePercentage(student.getId(), course.getId()),
+                (Student student, LocalDate date, int period) -> {
                     String status = attendanceController.toggle(student.getId(), course.getId(), date, period);
                     statusCache.put(AttendanceDAO.key(student.getId(), date, period), status);
-                    getTableView().refresh();
                     setStatus("Attendance updated for " + student.getStudentName() + ".");
-                    event.consume();
-                });
-            }
-
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
-                    setGraphic(null);
-                    return;
                 }
-                Student student = getTableView().getItems().get(getIndex());
-                String status = statusCache.getOrDefault(AttendanceDAO.key(student.getId(), date, period), "");
-                button.setText(status.equals("PRESENT") ? "✓" : status.equals("ABSENT") ? "✕" : "—");
-                button.getStyleClass().removeAll("present", "absent", "empty");
-                button.getStyleClass().add(status.equals("PRESENT") ? "present" : status.equals("ABSENT") ? "absent" : "empty");
-                setGraphic(button);
-            }
-        };
+        ).build();
     }
 
     private void loadAttendanceGrid() {
         Course course = selectedCourse();
-        if (course == null || sessionDatePicker.getValue() == null) {
+        if (course == null || weekStartDatePicker.getValue() == null) {
             statusCache.clear();
             attendanceTable.refresh();
             return;
         }
-        LocalDate start = DateUtil.mondayOf(sessionDatePicker.getValue());
-        LocalDate end = start.plusWeeks(WEEK_COUNT).minusDays(1);
+
+        LocalDate start = weekStartDatePicker.getValue();
+        LocalDate end = start.plusWeeks(weekCountSpinner.getValue()).minusDays(1);
+
         statusCache.clear();
         statusCache.putAll(attendanceDAO.loadStatuses(course.getId(), start, end));
         attendanceTable.refresh();
